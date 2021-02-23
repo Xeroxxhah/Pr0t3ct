@@ -12,4 +12,4 @@ then
 	rm pr0t3ct.py
 else
 	echo "Aborted"
-	
+fi
