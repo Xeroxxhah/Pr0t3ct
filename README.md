@@ -10,7 +10,7 @@ python3 pr0t3ct.py
 
 
 # Linux/Mac
-chmod +x setup.sh
+chmod +x setup.sh  
 run setup.sh  
 python3 pr0t3ct.py  
 
