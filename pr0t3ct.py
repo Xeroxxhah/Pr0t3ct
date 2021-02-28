@@ -6,6 +6,7 @@ import base64
 import hashlib
 import getpass
 import os
+from art import *
 
 salt = b'K\x8d\xb9\x86\xf7\x11\\\x14\xe8\x84\x16l\x8d+X\xe3'
 
@@ -30,6 +31,7 @@ def encrypt(filedata,key,output_name,extention):
     efile = open('Output/'+output_name+'.'+extention+'.pr0t3ct','wb')
     efile.write(encrypted)
     efile.close()
+    print(f"File encrypted sucessfully as {output_name+'.'+extention+'.pr0t3ct'} in Output")
 
 
 def decrypt(filedata,key,output_name,extention):
@@ -38,19 +40,26 @@ def decrypt(filedata,key,output_name,extention):
     efile = open('Output/'+output_name+'.pr0t3ct'+'.'+extention,'wb')
     efile.write(decrypted)
     efile.close()
+    print(f"File decrypted sucessfully as {output_name+'.'+extention+'.pr0t3ct'} in Output")
 
 
 def file_handler(file_path,key,output_name):
     if os.path.exists(file_path) and not file_path.endswith('.pr0t3ct'):
         filex = file_path.split('.')
-        extention = filex[1]
+        try:
+            extention = filex[1]
+        except IndexError:
+            extention = ''
         file = open(file_path,'rb')
         filedata = file.read()
         file.close()
         encrypt(filedata,key,output_name,extention)
     elif os.path.exists(file_path) and file_path.endswith('.pr0t3ct'):
         filex = file_path.split('.')
-        extention = filex[1]
+        try:
+            extention = filex[1]
+        except IndexError:
+            extention=''
         file = open(file_path,'rb')
         filedata = file.read()
         file.close()
@@ -87,8 +96,6 @@ def signin():
         stored_hash = hashfile.read()
         hashfile.close()
         if str(hashedpass) != str(stored_hash.decode()):
-            print(f'stored: {stored_hash}')
-            print(f'gen: {hashedpass}')
             print('access denied')
             quit()
         else:
@@ -101,8 +108,9 @@ def menu(key,username):
     print('*'*50)
     print(f'Welcome :: {username}')
     print('*'*50)
-    print('1:Encrypt File'+'-'*1)
-    print('2:Decrypt File'+'-'*2)
+    print('1:Encrypt File')
+    print('2:Decrypt File')
+    print('3:Exit')
     option = input('Selcet your option: ')
     if option == '1':
         filepath = input('Enter path of file: ')
@@ -112,15 +120,14 @@ def menu(key,username):
         filepath = input('Enter path of file: ')
         filename = input('Enter output file name: ')
         file_handler(filepath,key,filename)
+    elif option == '3':
+        quit()
     else:
-        print('Wrong options')
+        print('Wrong option')
         quit()
     
 
-print('%'*20)
-print('% |Pr0t3ct')
-print('% |       ')
-print('%'*20)
+tprint("Pr0t3ct","random")
 print('1:Signup\n2:Signin\n3:exit')
 option = input('Choose your option: ')
 if option == '1':
