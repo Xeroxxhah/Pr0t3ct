@@ -1,4 +1,4 @@
-from cryptography import fernet
+from typing import Text
 from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
@@ -18,52 +18,59 @@ kdf = PBKDF2HMAC(
  )
 
 
+def clearscr():
+    if os.name == 'nt':
+        os.system("cls")
+    else:
+        os.system("clear")
 
+
+def secure_del(file):
+    try:
+        delfile = open(file,'wb')
+        delfile.write(os.urandom(delfile.tell()))
+        delfile.close()
+        os.unlink(file)
+    except Exception as err:
+        print(err)
 
 
 def keygen(password):
      return base64.urlsafe_b64encode(kdf.derive(password))
 
 
-def encrypt(filedata,key,output_name,extention):
+def encrypt(key,path):
     fernet = Fernet(key)
+    file = open(path,'rb')
+    filedata = file.read()
+    file.close()
     encrypted = fernet.encrypt(filedata)
-    efile = open('Output/'+output_name+'.'+extention+'.pr0t3ct','wb')
+    output_file = path.replace(os.path.basename(path),os.path.basename(path)+'.pr0t3ct')
+    efile = open(output_file,'wb')
     efile.write(encrypted)
     efile.close()
-    print(f"File encrypted sucessfully as {output_name+'.'+extention+'.pr0t3ct'} in Output")
+    print(f"File encrypted sucessfully as {output_file}")
 
 
-def decrypt(filedata,key,output_name,extention):
+def decrypt(key,path):
     fernet = Fernet(key)
+    file = open(path,'rb')
+    filedata = file.read()
+    file.close()
     decrypted = fernet.decrypt(filedata)
-    efile = open('Output/'+output_name+'.pr0t3ct'+'.'+extention,'wb')
+    output_file = path.replace(os.path.basename(path),os.path.basename(path).strip('.pr0t3ct'))
+    efile = open(output_file,'wb')
     efile.write(decrypted)
     efile.close()
-    print(f"File decrypted sucessfully as {output_name+'.'+extention+'.pr0t3ct'} in Output")
+    print(f"File decrypted sucessfully as {output_file} ")
 
 
-def file_handler(file_path,key,output_name):
+def file_handler(file_path,key):
+    output_name = os.path.basename(file_path)
     if os.path.exists(file_path) and not file_path.endswith('.pr0t3ct'):
-        filex = file_path.split('.')
-        try:
-            extention = filex[1]
-        except IndexError:
-            extention = ''
-        file = open(file_path,'rb')
-        filedata = file.read()
-        file.close()
-        encrypt(filedata,key,output_name,extention)
+        encrypt(key,file_path)
     elif os.path.exists(file_path) and file_path.endswith('.pr0t3ct'):
-        filex = file_path.split('.')
-        try:
-            extention = filex[1]
-        except IndexError:
-            extention=''
-        file = open(file_path,'rb')
-        filedata = file.read()
-        file.close()
-        decrypt(filedata,key,output_name,extention)
+        decrypt(key,file_path)
     else:
         print('File does not exist.')
         quit()
@@ -75,7 +82,7 @@ def hashpass(password):
 
 def signup():
     username = input('Enter username: ')
-    password = getpass.getpass()
+    password = getpass.getpass(prompt="Enter Password: ")
     hashedpass = hashpass(password)
     try:
         os.mkdir('dep/'+username)
@@ -88,7 +95,7 @@ def signup():
 
 def signin():
     username = input('Enter username: ')
-    password = getpass.getpass()
+    password = getpass.getpass(prompt="Enter Password: ")
     hashedpass = hashpass(password)
     key = keygen(password.encode())
     if os.path.exists('dep/'+username):
@@ -105,21 +112,33 @@ def signin():
         quit()
 
 def menu(key,username):
+    clearscr()
     print('*'*50)
-    print(f'Welcome :: {username}')
     print('*'*50)
-    print('1:Encrypt File')
-    print('2:Decrypt File')
-    print('3:Exit')
+    print(f'Welcome :-: [{username}]')
+    print('*'*50)
+    print('*'*50)
+    print('[1]-[Encrypt File]')
+    print('[2]-[Decrypt File]')
+    print('[3]-[Exit]')
     option = input('Selcet your option: ')
+    clearscr()
     if option == '1':
         filepath = input('Enter path of file: ')
-        filename = input('Enter output file name: ')
-        file_handler(filepath,key,filename)
+        op = input("Do you want to delete the orignal file? (y/n): ")
+        if op.lower() == 'y':
+            file_handler(filepath,key)
+            secure_del(filepath)
+        else:
+            file_handler(filepath,key)
     elif option == '2':
         filepath = input('Enter path of file: ')
-        filename = input('Enter output file name: ')
-        file_handler(filepath,key,filename)
+        op = input("Do you want to delete the encrypted file? (y/n): ")
+        if op.lower() == 'y':
+            file_handler(filepath,key)
+            secure_del(filepath)
+        else:
+            file_handler(filepath,key)
     elif option == '3':
         quit()
     else:
